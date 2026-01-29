@@ -421,6 +421,10 @@
 
             // --- State Management ---
             const [activeContextId, setActiveContextId] = useState(-1);
+            
+            // New State: To prevent bubble from re-appearing immediately after timeout
+            const [dismissedContextId, setDismissedContextId] = useState(-1);
+
             const [nagState, setNagState] = useState({ active: false, level: 0, text: "" });
             const [currentNagIndex, setCurrentNagIndex] = useState(0);
 
@@ -504,10 +508,13 @@
 
             // --- Effects ---
 
-            // ** MODIFICATION: Auto-Hide Context Bubble after 4 seconds **
+            // ** Auto-Hide Context Bubble after 4 seconds (Strict Mode) **
             useEffect(() => {
                 if (activeContextId !== -1) {
                     const timer = setTimeout(() => {
+                        // 1. Mark this specific bubble as "dismissed" so it doesn't pop back up instantly
+                        setDismissedContextId(activeContextId);
+                        // 2. Hide it
                         setActiveContextId(-1);
                     }, 4000);
                     return () => clearTimeout(timer);
@@ -552,16 +559,30 @@
                         }
                     });
 
-                    // Update active context
-                    if (bestCandidateId !== -1 && bestCandidateId !== activeContextId) {
-                        setActiveContextId(bestCandidateId);
-                        // Nagging is handled by the Effect listening to activeContextId
+                    // Update active context ONLY if it's not the one we just dismissed
+                    if (bestCandidateId !== -1) {
+                        // If we found a candidate, make sure it's not the one we locked out
+                        if (bestCandidateId !== dismissedContextId) {
+                            // It's a valid new bubble (or an old one we scrolled back to after scrolling away)
+                            if (bestCandidateId !== activeContextId) {
+                                setActiveContextId(bestCandidateId);
+                                // Since we moved to a new ID, we can clear the lock on the old one
+                                setDismissedContextId(-1);
+                            }
+                        }
+                    } else {
+                        // No candidate found (user scrolled away from everything)
+                        if (activeContextId !== -1) setActiveContextId(-1);
+                        
+                        // User left the zone completely, so we can reset the dismissal lock.
+                        // This ensures if they come back later, it shows again.
+                        setDismissedContextId(-1);
                     }
                 };
 
                 window.addEventListener('scroll', handleScroll);
                 return () => window.removeEventListener('scroll', handleScroll);
-            }, [isScrolling, activeContextId]);
+            }, [isScrolling, activeContextId, dismissedContextId]); // Added dismissedContextId to dependencies
 
 
             // --- Handlers ---
@@ -569,21 +590,14 @@
                 setBearMood('excited');
 
                 // Stop Nagging and Clear Context
-                // We want to make it disappear ("Poof").
                 stopAllNagging();
-
-                // If it was Nagging, we want to advance to next message eventually (or just restart).
-                // If it was Context, we want to clear it.
-                // Resetting activeContextId to -1 (if it was context) works.
-                // Resetting nagState works.
 
                 const wasContext = activeContextId !== -1;
                 if (wasContext) {
                     setActiveContextId(-1);
+                    // Also dismiss it so it doesn't pop back up immediately if user is still there
+                    setDismissedContextId(activeContextId);
                 } else {
-                    // It was nagging (or idle). If nagging, advance index to restart cycle with next message?
-                    // User click implies interaction, so we can reset to idle.
-                    // To ensure cycle restarts with next message if it was nagging:
                     setCurrentNagIndex(prev => prev + 1);
                 }
 

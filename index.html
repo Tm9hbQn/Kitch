@@ -5,25 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>The Strategic Heart Dossier: Kitsch Edition</title>
 
-    <!-- Fonts: Pacifico (Headers), Quicksand (Body) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Quicksand:wght@400;600;700&display=swap" rel="stylesheet">
 
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
 
-    <!-- React & ReactDOM -->
     <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
 
-    <!-- Framer Motion -->
     <script src="https://unpkg.com/framer-motion@10.16.4/dist/framer-motion.js"></script>
 
-    <!-- Babel -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-    <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
 
     <style>
@@ -509,6 +503,16 @@
 
 
             // --- Effects ---
+
+            // ** MODIFICATION: Auto-Hide Context Bubble after 4 seconds **
+            useEffect(() => {
+                if (activeContextId !== -1) {
+                    const timer = setTimeout(() => {
+                        setActiveContextId(-1);
+                    }, 4000);
+                    return () => clearTimeout(timer);
+                }
+            }, [activeContextId]);
 
             // 1. Context Detection (Scroll)
             useEffect(() => {

@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>The Strategic Heart Dossier: Kitsch Edition</title>
+
+    <!-- Fonts: Pacifico (Headers), Quicksand (Body) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Quicksand:wght@400;600;700&display=swap" rel="stylesheet">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- React & ReactDOM -->
+    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+
+    <!-- Framer Motion -->
+    <script src="https://unpkg.com/framer-motion@10.16.4/dist/framer-motion.js"></script>
+
+    <!-- Babel -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        body {
+            font-family: 'Quicksand', sans-serif;
+            background: linear-gradient(135deg, #FFC6D9 0%, #E0C3FC 100%);
+            overflow-x: hidden;
+            color: #6A0F49;
+        }
+
+        h1, h2, h3 {
+            font-family: 'Pacifico', cursive;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 51, 153, 0.5);
+            border-radius: 10px;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.65);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 2px solid rgba(255, 255, 255, 0.8);
+            box-shadow: 0 8px 32px 0 rgba(224, 195, 252, 0.37);
+        }
+
+        /* Floating Animation */
+        @keyframes float {
+            0% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(5deg); }
+            100% { transform: translateY(0px) rotate(0deg); }
+        }
+
+        .floating-bg {
+            animation: float 6s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef, useCallback } = React;
+
+        // --- SAFEGUARD: Framer Motion fallback ---
+        const MotionLib = window.Motion || {
+            motion: {
+                div: 'div', section: 'section', span: 'span', h1: 'h1', p: 'p', ellipse: 'ellipse', circle: 'circle', path: 'path', g: 'g'
+            },
+            AnimatePresence: ({children}) => children
+        };
+        const { motion, AnimatePresence } = MotionLib;
+
+        // --- Configuration & Data ---
+
+        // List A: Contextual Bubbles
+        const CONTEXT_BUBBLES = [
+            "את האסלרית!", // 0
+            "חרב פיפיות🤭🤭🤭", // 1
+            "אקסיומה... זה שם של משאית?", // 2
+            "כאב פיזי 🦹‍♀️😈🔥", // 3
+            "🐥🐥🐥🐥🐥🐥🐥🐥🐥🐥", // 4
+            "🛡️⚔️🤴 בי נשבעתי להגן עלייך דניאלה!", // 5
+            "bitch wait ✋🛑", // 6
+            "שאמנים עתיקים... בואו אליי ברוחכם ❤️🙏" // 7
+        ];
+
+        // List B: Nagging Bubbles
+        const NAG_BUBBLES = [
+            "תלחצי עליי",
+            "show me some love",
+            "put it in",
+            "squeesh me!"
+        ];
+
+        const contentData = [
+            {
+                id: "intro",
+                title: "תורת המשחקים במרחב הסגור",
+                cards: [
+                    "בחוץ, את מנהלת אופרציות. יש לך את היכולת הנדירה לראות את המאקרו, לזהות מגמות לפני שהן הופכות לכותרות, להבין את הכוחות שמניעים המונים או מנהיגים נרקיסיסטים. את חדה, את נוכחת, ואת יודעת בדיוק איזה תדר את משדרת כשאת נכנסת לחדר. **ה'האסל' אצלך הוא לא הישרדות, הוא אמנות.**",
+                    "אבל כשאת סוגרת את הדלת, והרעש של העולם – הפוליטיקה, האקדמיה, הטירוף החיצוני – נשאר בחוץ, את נשארת עם השקט. ובשקט הזה, דווקא **האינטליגנציה שלך הופכת לחרב פיפיות.**"
+                ]
+            },
+            {
+                id: "analysis",
+                title: "הדיסוננס האנליטי",
+                cards: [
+                    "יש אירוניה אכזרית בכך שדווקא מי שמתמחה בניתוח מערכות מורכבות, מוצאת את עצמה ללא אלגוריתם סדור מול המערכת הזוגית המוסתרת הזו. המוח שלך, שרגיל לפרק נרטיבים לאומיים, מנסה להחיל את אותה לוגיקה על שתיקות והודעות טקסט.",
+                    "את מנסה למצוא דפוסים גם ברעש אקראי. כל השהיה, כל ניואנס, נרשמים אצלך כמו רעידת אדמה. הבעיה היא לא שאת לא רואה את המציאות, אלא שאת רואה אותה ברזולוציה גבוהה מדי. ה'קביעות' של הדברים מתערערת אצלך ברגע שהם יוצאים משדה הראייה, והצורך לאשרר את הקיום של הקשר שוב ושוב הוא לא חולשה – הוא **ניסיון לייצר אקסיומה בתוך משוואה שמשתנה כל הזמן.**"
+                ]
+            },
+            {
+                id: "somatic_pain",
+                title: "כשהמחשבות הופכות לתחושה סומטית",
+                cards: [
+                    "לפעמים, המרחק מייצר רעש לבן שאי אפשר להנמיך. המחשבות הופכות סואנות, וזה כבר לא רק בראש – זה בגוף. תחושת הריחוק מתרגמת אצלך ל**כאב פיזי ממש**, צריבה כמעט עורית של דחייה. את מרגישה חשופה, כמעט נטולת הגנות, כאילו מישהו כיבה את החימום באמצע ינואר.",
+                    "ואז מגיעה הדילמה של המפגש. האינסטינקט הוא לרוץ לשם, לקבל את התיקוף שהכל עדיין קיים. אבל כאן נדרש ממך ויסות אכזרי:",
+                    "לפני שאת יוצאת מהבית, תבדקי את מדד המשאבים. האם המפגש הזה יהיה מספיק? האם יש בו את הזמן, העומק והריכוז שאת – **האפרוח הקטן שבפנים** – חייבת כרגע?",
+                    "הסכנה הגדולה היא לא לא להיפגש. הסכנה היא להיפגש למעט מדי. לצאת ממפגש טכני או קצר כשאת בצמא רגשי, זה מתכון להתרסקות. את עלולה לצאת משם שבורה יותר, עם תחושת ריקנות שהוכפלה. החוכמה היא לדעת לוותר על הפירורים כדי **לשמור על הלב שלך שלם.** אם הסיטואציה לא מאפשרת לו לעטוף אותך כמו שאת צריכה היום – עדיף להישאר עם הגעגוע, הוא פחות הרסני מהאכזבה."
+                ]
+            },
+            {
+                id: "cognitive_tax",
+                title: "המס הקוגניטיבי",
+                cards: [
+                    "עבור העולם את כוח טבע, אבל המנגנון הפנימי דורש תחזוקה עדינה. הדברים ה'פשוטים' – לענות להודעה, לתחזק סמול-טוק – גובים ממך מס שאף אחד לא רואה. את נעלמת לא כי לא אכפת לך, אלא כי לפעמים, לנסח את המשפט המדויק מרגיש כמו כתיבת סמינריון. הפער הזה, בין היכולת הוורבלית הגבוהה לבין השיתוק הרגעי מול המסך, הוא המקום שבו את צריכה להניח לעצמך. **מותר לא לענות מיד. העולם יחכה.**"
+                ]
+            },
+            {
+                id: "conclusion",
+                title: "לחיות בתוך הסוגריים",
+                cards: [
+                    "הקשר הזה מתקיים בתוך סוגריים. הוא מוסתר, מה שמונע ממנו לקבל את התיקוף החיצוני שכל כך מרגיע את המערכת. את מחזיקה את הנרטיב הזה לבד.",
+                    "במקום לנסות 'לפתור' את אי-הודאות, נסי להסתכל עליה כעל מצב צבירה זמני. מותר לך להניח את הכלים המחקריים בצד. לא הכל דורש דקונסטרוקציה. לפעמים, גם לאישה החזקה, היפה והחכמה ביותר בחדר, מותר פשוט להיות. **בלי לנתח, בלי לנסח, ובלי לדעת מה יקרה בפרק הבא.**"
+                ]
+            }
+        ];
+
+        // --- Sparkle Component ---
+        const Sparkles = ({ onComplete }) => {
+            const particles = Array.from({ length: 12 });
+            useEffect(() => {
+                const timer = setTimeout(onComplete, 1000);
+                return () => clearTimeout(timer);
+            }, [onComplete]);
+
+            return (
+                <div className="absolute inset-0 pointer-events-none flex items-center justify-center z-50">
+                    {particles.map((_, i) => (
+                        <motion.div
+                            key={i}
+                            initial={{ opacity: 1, scale: 0, x: 0, y: 0 }}
+                            animate={{
+                                opacity: 0,
+                                scale: Math.random() * 1.5 + 0.5,
+                                x: (Math.random() - 0.5) * 150,
+                                y: (Math.random() - 0.5) * 150,
+                                rotate: Math.random() * 360
+                            }}
+                            transition={{ duration: 0.8, ease: "easeOut" }}
+                            className="absolute text-xl"
+                        >
+                            {Math.random() > 0.5 ? '💖' : '✨'}
+                        </motion.div>
+                    ))}
+                </div>
+            );
+        };
+
+        // --- Typewriter Component ---
+        const TypewriterHighlight = ({ text, id, onRegister }) => {
+            const [displayedText, setDisplayedText] = useState("");
+            const [isComplete, setIsComplete] = useState(false);
+            const [showSparkles, setShowSparkles] = useState(false);
+            const elementRef = useRef(null);
+            const [isVisible, setIsVisible] = useState(false);
+
+            useEffect(() => {
+                if (elementRef.current) {
+                    onRegister(id, elementRef.current);
+                }
+            }, [id, onRegister]);
+
+            useEffect(() => {
+                const observer = new IntersectionObserver(
+                    ([entry]) => {
+                        if (entry.isIntersecting && !isVisible) {
+                            setIsVisible(true);
+                        }
+                    },
+                    { threshold: 0.5 }
+                );
+                if (elementRef.current) observer.observe(elementRef.current);
+                return () => observer.disconnect();
+            }, [isVisible]);
+
+            useEffect(() => {
+                if (isVisible && !isComplete) {
+                    let index = 0;
+                    const interval = setInterval(() => {
+                        if (index <= text.length) {
+                            setDisplayedText(text.slice(0, index));
+                            index++;
+                        } else {
+                            clearInterval(interval);
+                            setIsComplete(true);
+                            setShowSparkles(true);
+                        }
+                    }, 40);
+                    return () => clearInterval(interval);
+                }
+            }, [isVisible, isComplete, text]);
+
+            return (
+                <span
+                    ref={elementRef}
+                    className="relative text-[#9E477B] decoration-clone"
+                    style={{
+                        display: 'inline',
+                        WebkitBoxDecorationBreak: 'clone',
+                        boxDecorationBreak: 'clone'
+                    }}
+                >
+                    <span className="bg-[#FF3399]/20 rounded-md transition-all duration-300 py-0.5 px-1">
+                        {displayedText}
+                        {!isComplete && isVisible && <span className="animate-pulse">|</span>}
+                    </span>
+                    <span className="opacity-0 w-0 h-0 overflow-hidden absolute">{text}</span>
+                    {showSparkles && <Sparkles onComplete={() => setShowSparkles(false)} />}
+                </span>
+            );
+        };
+
+        // --- Text Parser ---
+        const ParsedText = ({ content, onRegister, startIndex }) => {
+            const parts = content.split(/(\*\*.*?\*\*)/g);
+            let highlightCounter = 0;
+
+            return (
+                <p className="text-lg leading-relaxed text-[#6A0F49] mb-4">
+                    {parts.map((part, index) => {
+                        if (part.startsWith('**') && part.endsWith('**')) {
+                            const cleanText = part.slice(2, -2);
+                            const currentId = startIndex + highlightCounter;
+                            highlightCounter++;
+                            return (
+                                <TypewriterHighlight
+                                    key={index}
+                                    id={currentId}
+                                    text={cleanText}
+                                    onRegister={onRegister}
+                                />
+                            );
+                        }
+                        return <span key={index}>{part}</span>;
+                    })}
+                </p>
+            );
+        };
+
+        // --- Teddy Bear Component ---
+        const TeddyBear = ({ scrollState, mood, xPosition, onClick, bubbleText, rednessLevel, scaleLevel }) => {
+
+            // Color Interpolation for Redness (Level 0 to 5)
+            const getFurColor = (level) => {
+                if (level === 0) return "#E6A8C9";
+                const colors = ["#E6A8C9", "#FF99AA", "#FF6688", "#FF3366", "#CC0033", "#8B0000"];
+                return colors[Math.min(level, 5)];
+            };
+            const furColor = getFurColor(rednessLevel);
+
+            // Scale Logic
+            const bearScale = 1 + (scaleLevel * 0.1);
+
+            const controls = {
+                idle: { y: [0, -3, 0], rotate: [0, 1, 0, -1, 0], transition: { repeat: Infinity, duration: 4, ease: "easeInOut" } },
+                scrolling: { y: [0, -10, 0], rotate: [-5, 5], transition: { repeat: Infinity, duration: 0.4 } },
+                excited: { scale: [1, 1.2, 1], rotate: [0, -15, 15, 0], transition: { duration: 0.5 } }
+            };
+
+            const currentAnimation = mood === 'excited' ? controls.excited : (scrollState ? controls.scrolling : controls.idle);
+
+            // Smart Bubble Positioning Logic
+            const isBearOnLeft = xPosition < 50;
+
+            // Close positioning to head
+            let bubblePosClass = "";
+            let tailPos = {};
+
+            if (isBearOnLeft) {
+                // Bear Left -> Bubble on Right of head
+                bubblePosClass = "left-[50%] -translate-x-2";
+                tailPos = { left: '20px', transform: 'rotate(45deg)' };
+            } else {
+                // Bear Right -> Bubble on Left of head
+                bubblePosClass = "right-[50%] translate-x-2";
+                tailPos = { right: '20px', transform: 'rotate(45deg)' };
+            }
+
+            return (
+                <motion.div
+                    className="fixed bottom-4 z-50 select-none w-24 h-24 md:w-32 md:h-32 cursor-pointer touch-manipulation"
+                    animate={{
+                        left: `${xPosition}%`,
+                        scale: bearScale
+                    }}
+                    transition={{
+                        left: { type: "spring", stiffness: 40, damping: 15 },
+                        scale: { duration: 0.5 }
+                    }}
+                    onClick={onClick}
+                >
+                    <AnimatePresence mode="wait">
+                        {bubbleText && (
+                            <motion.div
+                                key={bubbleText}
+                                initial={{ opacity: 0, scale: 0, y: 10 }}
+                                animate={{ opacity: 1, scale: 1 + (scaleLevel * 0.1), y: -5 }}
+                                exit={{ opacity: 0, scale: 0.5, transition: { duration: 0.2 } }}
+                                // Positioning: bottom-[85%] to bring closer to head.
+                                className={`absolute bottom-[85%] bg-white border-2 border-[#FF3399] rounded-xl p-2 shadow-lg text-center text-sm font-bold text-[#6A0F49] z-50 pointer-events-none ${bubblePosClass}`}
+                                style={{
+                                    width: 'max-content',
+                                    maxWidth: '120px', // Restrict width to encourage vertical growth
+                                    minWidth: '80px',
+                                    whiteSpace: 'normal',
+                                    lineHeight: '1.2'
+                                }}
+                            >
+                                {bubbleText}
+                                <div
+                                    className="absolute w-3 h-3 bg-white border-b-2 border-r-2 border-[#FF3399]"
+                                    style={{
+                                        bottom: '-7px',
+                                        ...tailPos,
+                                        background: 'white'
+                                    }}
+                                ></div>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+
+                    <motion.div
+                        animate={currentAnimation}
+                        className="relative w-full h-full drop-shadow-2xl filter"
+                        style={{ filter: "drop-shadow(0px 10px 10px rgba(106, 15, 73, 0.3))" }}
+                    >
+                        <svg viewBox="0 0 200 200" className="w-full h-full">
+                            <circle cx="100" cy="140" r="45" fill={furColor} className="transition-colors duration-500" />
+                            <circle cx="100" cy="140" r="25" fill="#F8Cce2" opacity="0.6" />
+
+                            <motion.ellipse
+                                animate={scrollState ? { ry: [12, 10, 12] } : {}}
+                                cx="70" cy="175" rx="15" ry="12" fill={rednessLevel > 2 ? "#8B0000" : "#D689B0"} className="transition-colors duration-500"
+                            />
+                            <motion.ellipse
+                                animate={scrollState ? { ry: [12, 10, 12], transition: {delay: 0.2} } : {}}
+                                cx="130" cy="175" rx="15" ry="12" fill={rednessLevel > 2 ? "#8B0000" : "#D689B0"} className="transition-colors duration-500"
+                            />
+
+                            <path d="M65 130 Q 80 150 100 145" stroke={rednessLevel > 2 ? "#8B0000" : "#D689B0"} strokeWidth="12" strokeLinecap="round" fill="none" className="transition-colors duration-500" />
+                            <path d="M135 130 Q 120 150 100 145" stroke={rednessLevel > 2 ? "#8B0000" : "#D689B0"} strokeWidth="12" strokeLinecap="round" fill="none" className="transition-colors duration-500" />
+
+                            <circle cx="100" cy="85" r="40" fill={furColor} className="transition-colors duration-500" />
+                            <circle cx="65" cy="60" r="12" fill={furColor} className="transition-colors duration-500" />
+                            <circle cx="65" cy="60" r="6" fill={rednessLevel > 2 ? "#8B0000" : "#D689B0"} className="transition-colors duration-500" />
+                            <circle cx="135" cy="60" r="12" fill={furColor} className="transition-colors duration-500" />
+                            <circle cx="135" cy="60" r="6" fill={rednessLevel > 2 ? "#8B0000" : "#D689B0"} className="transition-colors duration-500" />
+
+                            <ellipse cx="100" cy="95" rx="14" ry="10" fill="#FFF0F5" />
+                            <path d="M96 92 C 94 90, 92 92, 96 96 C 100 92, 98 90, 96 92" fill="#6A0F49" transform="translate(4,0) scale(1.2)" />
+                            <circle cx="88" cy="80" r="3" fill="#4A0530" />
+                            <circle cx="112" cy="80" r="3" fill="#4A0530" />
+                            <circle cx="80" cy="92" r="5" fill="#FF69B4" opacity="0.4" className="animate-pulse" />
+                            <circle cx="120" cy="92" r="5" fill="#FF69B4" opacity="0.4" className="animate-pulse" />
+                            <text x="92" y="145" fontSize="16">💖</text>
+
+                            {mood === 'excited' && (
+                                <g>
+                                    {[...Array(8)].map((_, i) => (
+                                        <circle
+                                            key={i}
+                                            cx="100"
+                                            cy="100"
+                                            r={Math.random() * 4 + 2}
+                                            fill={["#FF3399", "#FFD700", "#FFF", "#8A2BE2"][i % 4]}
+                                            className="animate-ping"
+                                            style={{
+                                                transformOrigin: 'center',
+                                                animationDuration: `${0.5 + Math.random() * 0.5}s`,
+                                                transform: `translate(${(Math.random() - 0.5) * 100}px, ${(Math.random() - 0.5) * 100}px)`
+                                            }}
+                                        />
+                                    ))}
+                                    <text x="80" y="80" fontSize="20" className="animate-bounce" style={{animationDelay: '0.1s'}}>💕</text>
+                                    <text x="120" y="80" fontSize="20" className="animate-bounce" style={{animationDelay: '0.2s'}}>💕</text>
+                                    <text x="100" y="60" fontSize="20" className="animate-bounce" style={{animationDelay: '0s'}}>💖</text>
+                                </g>
+                            )}
+                        </svg>
+                    </motion.div>
+                </motion.div>
+            );
+        };
+
+        // --- Main App Component ---
+        const App = () => {
+            const [bearMood, setBearMood] = useState('idle');
+            const [isScrolling, setIsScrolling] = useState(false);
+            const [bearX, setBearX] = useState(10);
+            const scrollTimeout = useRef(null);
+
+            // --- State Management ---
+            const [activeContextId, setActiveContextId] = useState(-1);
+            const [nagState, setNagState] = useState({ active: false, level: 0, text: "" });
+            const [currentNagIndex, setCurrentNagIndex] = useState(0);
+
+            // Refs
+            const highlightRefs = useRef({});
+            const nagTimerRef = useRef(null);
+            const nagIntervalRef = useRef(null);
+            const nagWaitTimerRef = useRef(null);
+
+            // Register highlight elements
+            const registerHighlight = useCallback((id, element) => {
+                highlightRefs.current[id] = element;
+            }, []);
+
+            // --- Nag Logic Implementation ---
+            const stopAllNagging = () => {
+                clearTimeout(nagTimerRef.current);
+                clearInterval(nagIntervalRef.current);
+                clearTimeout(nagWaitTimerRef.current);
+                setNagState({ active: false, level: 0, text: "" });
+            };
+
+            const startNagCycle = () => {
+                // If Context active, abort
+                if (activeContextId !== -1) return;
+
+                // 1. Wait 3 seconds before showing bubble
+                nagTimerRef.current = setTimeout(() => {
+                    if (activeContextId !== -1) return;
+
+                    // 2. Show Bubble (Level 1)
+                    const text = NAG_BUBBLES[currentNagIndex % NAG_BUBBLES.length];
+                    setNagState({ active: true, level: 1, text });
+
+                    // 3. Grow every 3 seconds (Levels 2-5)
+                    // Level 1 starts now (T=3s from startNagCycle)
+                    // We need to increment level every 3 seconds.
+                    let lvl = 1;
+                    nagIntervalRef.current = setInterval(() => {
+                        if (activeContextId !== -1) {
+                            stopAllNagging();
+                            return;
+                        }
+
+                        lvl++;
+                        if (lvl <= 5) {
+                            setNagState(prev => ({ ...prev, level: lvl }));
+                        } else {
+                            // Max level reached (5).
+                            // We need to wait 5 seconds before disappearing.
+                            clearInterval(nagIntervalRef.current);
+
+                            nagWaitTimerRef.current = setTimeout(() => {
+                                if (activeContextId !== -1) return;
+
+                                // Disappear
+                                setNagState({ active: false, level: 0, text: "" });
+
+                                // Advance to next message and restart cycle
+                                // The change in currentNagIndex triggers the Effect to restart.
+                                setCurrentNagIndex(prev => prev + 1);
+                            }, 5000);
+                        }
+                    }, 3000);
+                }, 3000);
+            };
+
+            // Master Effect for Nagging
+            useEffect(() => {
+                // Cleanup current timers
+                stopAllNagging();
+
+                // If no context is active, start the cycle
+                if (activeContextId === -1) {
+                    startNagCycle();
+                }
+
+                return () => stopAllNagging();
+            }, [activeContextId, currentNagIndex]);
+
+
+            // --- Effects ---
+
+            // 1. Context Detection (Scroll)
+            useEffect(() => {
+                const handleScroll = () => {
+                    if (!isScrolling) setIsScrolling(true);
+                    clearTimeout(scrollTimeout.current);
+
+                    // Bear Movement
+                    scrollTimeout.current = setTimeout(() => {
+                        setIsScrolling(false);
+                        setBearX(5 + Math.random() * 75);
+                    }, 500);
+
+                    // --- Scroll Logic for Context ---
+                    // "Goldilocks Zone" ~ 60% down the screen
+                    const triggerY = window.innerHeight * 0.6;
+
+                    let bestCandidateId = -1;
+                    let minDistance = Infinity;
+
+                    Object.keys(highlightRefs.current).forEach(key => {
+                        const el = highlightRefs.current[key];
+                        if (el) {
+                            const rect = el.getBoundingClientRect();
+                            const elementCenter = rect.top + (rect.height / 2);
+
+                            // Distance from trigger point
+                            const dist = Math.abs(elementCenter - triggerY);
+
+                            // Only consider if reasonably on screen
+                            if (rect.top < window.innerHeight && rect.bottom > 0) {
+                                if (dist < minDistance) {
+                                    minDistance = dist;
+                                    bestCandidateId = parseInt(key);
+                                }
+                            }
+                        }
+                    });
+
+                    // Update active context
+                    if (bestCandidateId !== -1 && bestCandidateId !== activeContextId) {
+                        setActiveContextId(bestCandidateId);
+                        // Nagging is handled by the Effect listening to activeContextId
+                    }
+                };
+
+                window.addEventListener('scroll', handleScroll);
+                return () => window.removeEventListener('scroll', handleScroll);
+            }, [isScrolling, activeContextId]);
+
+
+            // --- Handlers ---
+            const handleBearClick = () => {
+                setBearMood('excited');
+
+                // Stop Nagging and Clear Context
+                // We want to make it disappear ("Poof").
+                stopAllNagging();
+
+                // If it was Nagging, we want to advance to next message eventually (or just restart).
+                // If it was Context, we want to clear it.
+                // Resetting activeContextId to -1 (if it was context) works.
+                // Resetting nagState works.
+
+                const wasContext = activeContextId !== -1;
+                if (wasContext) {
+                    setActiveContextId(-1);
+                } else {
+                    // It was nagging (or idle). If nagging, advance index to restart cycle with next message?
+                    // User click implies interaction, so we can reset to idle.
+                    // To ensure cycle restarts with next message if it was nagging:
+                    setCurrentNagIndex(prev => prev + 1);
+                }
+
+                // Bear reset after animation
+                setTimeout(() => {
+                    setBearMood('idle');
+                }, 1500);
+            };
+
+            // --- Render Logic ---
+            let bubbleText = null;
+            let currentRedness = 0;
+            let currentScale = 0;
+
+            // PRIORITY: Context > Nag
+            if (activeContextId !== -1 && CONTEXT_BUBBLES[activeContextId]) {
+                bubbleText = CONTEXT_BUBBLES[activeContextId];
+                currentRedness = 0; // Context always resets bear
+                currentScale = 0;   // Context always resets size
+            } else if (nagState.active) {
+                bubbleText = nagState.text;
+                currentRedness = nagState.level;
+                currentScale = nagState.level;
+            }
+
+            let globalHighlightIndex = 0;
+
+            return (
+                <div className="min-h-screen pb-32 relative">
+                    <div className="fixed inset-0 pointer-events-none overflow-hidden">
+                        <div className="absolute top-10 left-10 text-6xl opacity-20 floating-bg">☁️</div>
+                        <div className="absolute top-40 right-20 text-4xl opacity-20 floating-bg" style={{animationDelay: '1s'}}>💖</div>
+                        <div className="absolute bottom-40 left-20 text-5xl opacity-20 floating-bg" style={{animationDelay: '2s'}}>✨</div>
+                        <div className="absolute bottom-10 right-10 text-6xl opacity-20 floating-bg" style={{animationDelay: '3s'}}>🍭</div>
+                        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-white opacity-10 rounded-full blur-3xl"></div>
+                    </div>
+
+                    <header className="pt-12 pb-8 px-4 text-center relative z-10">
+                        <motion.div
+                            initial={{ y: -50, opacity: 0 }}
+                            animate={{ y: 0, opacity: 1 }}
+                            transition={{ type: "spring", stiffness: 100 }}
+                        >
+                            <h1 className="text-4xl md:text-6xl text-[#6A0F49] drop-shadow-sm mb-2">
+                                The Strategic Heart
+                            </h1>
+                            <div className="inline-block bg-white/40 backdrop-blur-md rounded-full px-4 py-1 border border-white/50">
+                                <span className="text-sm font-bold tracking-widest text-[#FF3399] uppercase">Dossier: Kitsch Edition</span>
+                            </div>
+                        </motion.div>
+                    </header>
+
+                    <main className="max-w-2xl mx-auto px-4 space-y-12 relative z-10">
+                        {contentData.map((section, index) => {
+                            const currentStartIndex = globalHighlightIndex;
+                            const matches = (JSON.stringify(section.cards).match(/\*\*(.*?)\*\*/g) || []).length;
+                            globalHighlightIndex += matches;
+
+                            return (
+                                <motion.section
+                                    key={section.id}
+                                    initial={{ opacity: 0, y: 50 }}
+                                    whileInView={{ opacity: 1, y: 0 }}
+                                    viewport={{ once: true, margin: "-50px" }}
+                                    transition={{ duration: 0.6, delay: index * 0.1 }}
+                                    className="glass-card rounded-[3rem] p-6 md:p-8"
+                                >
+                                    <div className="mb-6 flex items-center gap-3">
+                                        <div className="w-3 h-3 rounded-full bg-[#FF3399] animate-pulse"></div>
+                                        <h2 className="text-2xl md:text-3xl text-[#6A0F49]">{section.title}</h2>
+                                    </div>
+
+                                    <div className="space-y-6">
+                                        {section.cards.map((cardText, cIndex) => (
+                                            <div
+                                                key={cIndex}
+                                                className="bg-white/40 rounded-2xl p-6 border border-white/60 hover:bg-white/50 transition-colors duration-300"
+                                            >
+                                                <ParsedText
+                                                    content={cardText}
+                                                    onRegister={registerHighlight}
+                                                    startIndex={currentStartIndex}
+                                                />
+                                            </div>
+                                        ))}
+                                    </div>
+                                </motion.section>
+                            );
+                        })}
+                    </main>
+
+                    <footer className="mt-20 text-center text-[#6A0F49]/60 pb-8 text-sm relative z-10">
+                        <p>© 2026 Lovecore Systems Inc. All feelings preserved in sugar.</p>
+                        <p className="text-xs mt-2 opacity-50">System Status: Heartbeat Stable</p>
+                    </footer>
+
+                    <TeddyBear
+                        scrollState={isScrolling}
+                        mood={bearMood}
+                        xPosition={bearX}
+                        onClick={handleBearClick}
+                        bubbleText={bubbleText}
+                        rednessLevel={currentRedness}
+                        scaleLevel={currentScale}
+                    />
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
